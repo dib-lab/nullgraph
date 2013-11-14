@@ -1,16 +1,27 @@
 #! /usr/bin/env python
 import screed
-import sys
 import random
 import fasta
+import argparse
+import sys
 
-random.seed(1)                  # make this reproducible, please.
+parser = argparse.ArgumentParser()
+parser.add_argument("--mutation-details", dest="mutation_details", help="Write detailed log of mutations here")
+parser.add_argument("--read-length", dest="read_length", help="Length of reads to generate", type=int, default=100)
+parser.add_argument("--coverage", dest="coverage", help="Targeted coverage level", type=int, default=50)
+parser.add_argument("--error-rate", dest="error_rate", help="Target error rate (1 base in X)", type=int, default=100)
+parser.add_argument("-r", "--seed", dest="seed", help="Random seed", type=int, default=1)
+parser.add_argument("input_file")
 
-COVERAGE=50
-READLEN=100
-ERROR_RATE=100
+args = parser.parse_args()
 
-record = iter(screed.open(sys.argv[1])).next()
+random.seed(args.seed)                  # make this reproducible, please.
+
+COVERAGE=args.coverage
+READLEN=args.read_length
+ERROR_RATE=args.error_rate
+
+record = iter(screed.open(args.input_file)).next()
 genome = record.sequence
 len_genome = len(genome)
 
@@ -19,6 +30,14 @@ reads_mut = 0
 total_mut = 0
 
 nucl = ['a', 'c', 'g', 't']
+
+print >>sys.stderr, "Read in template genome {0} of length {1} from {2}".format(record["name"], len_genome, args.input_file)
+print >>sys.stderr, "Generating {0} reads of length {1} for a target coverage of {2} with a target error rate of 1 in {3}".format(n_reads, READLEN, COVERAGE, ERROR_RATE)
+
+if args.mutation_details != None:
+    details_out = open(args.mutation_details, "w")
+else:
+    details_out = None
 
 for i in range(n_reads):
     start = random.randint(0, len_genome - READLEN)
@@ -41,7 +60,7 @@ for i in range(n_reads):
            if orig.lower() == new_base:
                continue
 
-           print >>sys.stderr, "{0}\t{1}\t{2}\t{3}".format(seq_name, pos, orig, new_base)
+           print >>details_out, "{0}\t{1}\t{2}\t{3}".format(seq_name, pos, orig, new_base)
 
            read = read[:pos] + new_base + read[pos+1:]
            was_mut = True
