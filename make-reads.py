@@ -60,7 +60,8 @@ for i in range(n_reads):
            if orig.lower() == new_base:
                continue
 
-           print >>details_out, "{0}\t{1}\t{2}\t{3}".format(seq_name, pos, orig, new_base)
+           if details_out != None:
+               print >>details_out, "{0}\t{1}\t{2}\t{3}".format(seq_name, pos, orig, new_base)
 
            read = read[:pos] + new_base + read[pos+1:]
            was_mut = True

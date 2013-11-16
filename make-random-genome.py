@@ -11,7 +11,7 @@ args = parser.parse_args()
 random.seed(args.seed)                  # make reproducible
 
 x = ["A"] + ["G"] + ["C"] + ["T"]
-x = x*args.length
+x = x*(args.length / 4)
 
 random.shuffle(x)
 
