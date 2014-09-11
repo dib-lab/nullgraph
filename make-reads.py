@@ -37,13 +37,13 @@ print >>sys.stderr, 'readlen:', READLEN
 print >>sys.stderr, 'error rate:', ERROR_RATE
 
 n_reads = int(len_genome*COVERAGE / float(READLEN))
-reads_mut = 0
+read_mutations = 0
 total_mut = 0
 
 nucl = ['a', 'c', 'g', 't']
 
 print >>sys.stderr, "Read in template genome {0} of length {1} from {2}".format(record["name"], len_genome, args.genome)
-print >>sys.stderr, "Generating {0} reads of length {1} for a target coverage of {2} with a target error rate of 1 in {3}".format(n_reads, READLEN, COVERAGE, ERROR_RATE)
+print >>sys.stderr, "Generating {0} reads of length {1} for a target coverage of {2} with a target error rate of {3}".format(n_reads, READLEN, COVERAGE, ERROR_RATE)
 
 if args.mutation_details != None:
     details_out = open(args.mutation_details, "w")
@@ -61,7 +61,6 @@ for i in range(n_reads):
     # error?
     was_mut = False
     seq_name = "read{0}".format(i)
-    read_mutations = 0
     for _ in range(READLEN):
         if ERROR_RATE > 0:
             while random.randint(1, int(1.0/ERROR_RATE)) == 1:
@@ -75,13 +74,14 @@ for i in range(n_reads):
                     print >>details_out, "{0}\t{1}\t{2}\t{3}".format(seq_name,
                                                           pos, orig, new_base)
 
-                read = read[:pos] + random.choice(nucl) + read[pos+1:]
+                read = read[:pos] + new_base + read[pos+1:]
                 was_mut = True
                 total_mut += 1
                 
+    if was_mut:
         read_mutations += 1
     
     print '>{0} start={1},mutations={2}\n{3}'.format(seq_name, start, read_mutations, read)
 
 print >>sys.stderr, "%d of %d reads mutated; %d total mutations" % \
-    (reads_mut, n_reads, total_mut)
+    (read_mutations, n_reads, total_mut)
