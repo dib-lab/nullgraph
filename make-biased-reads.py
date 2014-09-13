@@ -4,21 +4,44 @@ import sys
 import random
 import math
 import fasta
+import argparse
 
-random.seed(1)                  # make this reproducible, please.
+parser = argparse.ArgumentParser()
+parser.add_argument('-e', '--error-rate', type=float, default=.01)
+parser.add_argument('-r', '--read-length', type=int, default=100,
+                    help="Length of reads to generate")
+parser.add_argument('-C', '--coverage', type=int, default=50,
+                    help="Targeted coverage level of first sequence")
+parser.add_argument("-S", "--seed", dest="seed", help="Random seed", type=int,
+                    default=1)
+parser.add_argument('genome')
 
-N_READS = int(1e6)
-READLEN=100
-ERROR_RATE=100
+args = parser.parse_args()
 
+random.seed(args.seed)                  # make this reproducible, please.
+
+COVERAGE = args.coverage
+READLEN = args.read_length
+ERROR_RATE = args.error_rate
+
+# calculate number of reads to output from first sequence
+record = iter(screed.open(args.genome)).next()
+
+genome = record.sequence
+len_genome = len(genome)
+
+zero_index_count = int(len_genome*COVERAGE / float(READLEN))
+nucl = ['a', 'c', 'g', 't']
+
+####
 
 indices = []
 seqs = []
 powers = {}
 
 index = 0
-for r in screed.open(sys.argv[1]):
-    power = int(r.description)
+for r in screed.open(args.genome):
+    power = float(r.description)
     count = int(math.pow(10, power))
     indices += [index] * count
     seqs.append(r.sequence)
@@ -26,13 +49,16 @@ for r in screed.open(sys.argv[1]):
 
     index += 1
 
-n_reads = N_READS
 reads_mut = 0
 total_mut = 0
 
 z = []
-for i in range(n_reads):
+n_reads = 0
+while zero_index_count > 0:
     index = random.choice(indices)
+    if index == 0:
+        zero_index_count -= 1
+
     sequence = seqs[index]
 
     start = random.randint(0, len(sequence) - READLEN)
@@ -45,23 +71,30 @@ for i in range(n_reads):
     # error?
     was_mut = False
     for _ in range(READLEN):
-        while random.randint(1, ERROR_RATE) == 1:
-            pos = random.randint(1, READLEN) - 1
-            read = read[:pos] + random.choice(['a', 'c', 'g', 't']) + read[pos+1:]
-            was_mut = True
-            total_mut += 1
+        if ERROR_RATE > 0:
+            while random.randint(1, int(1.0/ERROR_RATE)) == 1:
+                pos = random.randint(1, READLEN) - 1
+                orig = read[pos]
+                new_base = random.choice(nucl)
+                if orig.lower() == new_base:
+                    continue
+
+                read = read[:pos] + new_base + read[pos+1:]
+                was_mut = True
+                total_mut += 1
 
     if was_mut:
         reads_mut += 1
 
-    print '>read%d\n%s' % (i, read)
+    print '>read%d\n%s' % (n_reads, read)
     z.append(index)
+    n_reads += 1
 
 y = []
 for i in set(z):
     y.append((z.count(i), i))
 y.sort()
-print >>sys.stderr, y
+print >>sys.stderr, 'reads per sequence:', y
 
 print >>sys.stderr, "%d of %d reads mutated; %d total mutations" % \
     (reads_mut, n_reads, total_mut)
