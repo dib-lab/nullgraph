@@ -14,6 +14,7 @@ parser.add_argument('-C', '--coverage', type=int, default=50,
                     help="Targeted coverage level of first sequence")
 parser.add_argument("-S", "--seed", dest="seed", help="Random seed", type=int,
                     default=1)
+parser.add_argument("--mutation-details", dest="mutation_details", help="Write detailed log of mutations here")
 parser.add_argument('genome')
 
 args = parser.parse_args()
@@ -34,6 +35,11 @@ zero_index_count = int(len_genome*COVERAGE / float(READLEN))
 nucl = ['a', 'c', 'g', 't']
 
 ####
+
+if args.mutation_details != None:
+    details_out = open(args.mutation_details, "w")
+else:
+    details_out = None
 
 indices = []
 seqs = []
@@ -68,6 +74,8 @@ while zero_index_count > 0:
     if random.choice([0, 1]) == 0:
         read = fasta.rc(read)
 
+    seq_name = 'read%d' % (n_reads,)
+
     # error?
     was_mut = False
     for _ in range(READLEN):
@@ -79,6 +87,10 @@ while zero_index_count > 0:
                 if orig.lower() == new_base:
                     continue
 
+                if details_out != None:
+                    print >>details_out, "{0}\t{1}\t{2}\t{3}".format(seq_name,
+                                                          pos, orig, new_base)
+
                 read = read[:pos] + new_base + read[pos+1:]
                 was_mut = True
                 total_mut += 1
@@ -86,7 +98,7 @@ while zero_index_count > 0:
     if was_mut:
         reads_mut += 1
 
-    print '>read%d\n%s' % (n_reads, read)
+    print '>%s\n%s' % (seq_name, read)
     z.append(index)
     n_reads += 1
 
