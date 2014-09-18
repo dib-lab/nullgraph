@@ -51,6 +51,7 @@ else:
     details_out = None
 
 for i in range(n_reads):
+    per_read_mutations = 0
     start = random.randint(0, len_genome - READLEN)
     read = genome[start:start + READLEN].upper()
 
@@ -77,11 +78,12 @@ for i in range(n_reads):
                 read = read[:pos] + new_base + read[pos+1:]
                 was_mut = True
                 total_mut += 1
+                per_read_mutations += 1
                 
     if was_mut:
         read_mutations += 1
     
-    print '>{0} start={1},mutations={2}\n{3}'.format(seq_name, start, read_mutations, read)
+    print '>{0} start={1},mutations={2}\n{3}'.format(seq_name, start, per_read_mutations, read)
 
 print >>sys.stderr, "%d of %d reads mutated; %d total mutations" % \
     (read_mutations, n_reads, total_mut)
