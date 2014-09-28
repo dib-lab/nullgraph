@@ -53,6 +53,8 @@ for r in screed.open(args.genome):
     seqs.append(r.sequence)
     powers[index] = power
 
+    print >>sys.stderr, r.name, power, count
+
     index += 1
 
 reads_mut = 0
