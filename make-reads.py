@@ -13,6 +13,8 @@ parser.add_argument('-C', '--coverage', type=int, default=50,
                     help="Targeted coverage level")
 parser.add_argument("-S", "--seed", dest="seed", help="Random seed", type=int,
                     default=1)
+parser.add_argument("--even", dest="is_even", default=False,
+                    action="store_true")
 parser.add_argument("--mutation-details", dest="mutation_details", help="Write detailed log of mutations here")
 
 parser.add_argument('genome')
@@ -56,17 +58,28 @@ for i in range(n_reads):
     read = genome[start:start + READLEN].upper()
 
     # reverse complement?
+    is_rc = False
     if random.choice([0, 1]) == 0:
+        is_rc = True
         read = fasta.rc(read)
 
     # error?
     was_mut = False
-    seq_name = "read{0}".format(i)
+    rc_flag = 'f'
+    if is_rc:
+        rc_flag = 'r'
+    seq_name = "read{0}{1}".format(i, rc_flag)
+
+    orig_read = read
     for _ in range(READLEN):
         if ERROR_RATE > 0:
             while random.randint(1, int(1.0/ERROR_RATE)) == 1:
                 pos = random.randint(1, READLEN) - 1
-                orig = read[pos]
+                if args.is_even:
+                    while pos % 2:
+                        pos = random.randint(1, READLEN) - 1
+
+                orig = orig_read[pos]
                 new_base = random.choice(nucl)
                 if orig.lower() == new_base:
                     continue
