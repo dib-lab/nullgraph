@@ -73,7 +73,9 @@ for i in range(n_reads):
     orig_read = read
     for _ in range(READLEN):
         if ERROR_RATE > 0:
-            while random.randint(1, int(1.0/ERROR_RATE)) == 1:
+            force = False
+            while force or random.randint(1, int(1.0/ERROR_RATE)) == 1:
+                force = False
                 pos = random.randint(1, READLEN) - 1
                 if args.is_even:
                     while pos % 2:
@@ -82,6 +84,7 @@ for i in range(n_reads):
                 orig = orig_read[pos]
                 new_base = random.choice(nucl)
                 if orig.lower() == new_base:
+                    force = True        # force a mutation
                     continue
                 
                 if details_out != None:
