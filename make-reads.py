@@ -9,7 +9,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('-e', '--error-rate', type=float, default=.01)
 parser.add_argument('-r', '--read-length', type=int, default=100,
                     help="Length of reads to generate")
-parser.add_argument('-C', '--coverage', type=int, default=50,
+parser.add_argument('-C', '--coverage', type=float, default=50.0,
                     help="Targeted coverage level")
 parser.add_argument("-S", "--seed", dest="seed", help="Random seed", type=int,
                     default=1)
