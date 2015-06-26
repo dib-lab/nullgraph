@@ -47,7 +47,8 @@ powers = {}
 
 index = 0
 for r in screed.open(args.genome):
-    power = float(r.description)
+    description = r.name.split()[-1]
+    power = float(description)
     count = int(math.pow(10, power))
     indices += [index] * count
     seqs.append(r.sequence)

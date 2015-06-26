@@ -175,7 +175,7 @@ def reverse_complement(s):
     assert is_dna(s), "Your sequence must be DNA!"
 
     # now do the reverse translation magic, using this odd 'array' stuff:
-    reverse = array('c', s)
+    reverse = array('c', str(s))
     reverse.reverse()
     reverse = string.join(reverse, '')
     
