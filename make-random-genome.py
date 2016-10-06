@@ -1,4 +1,5 @@
 #! /usr/bin/env python
+from __future__ import print_function
 import random
 import argparse
 import sys
@@ -17,14 +18,14 @@ def main():
 
     random.seed(args.seed)
 
-    print >>sys.stderr, 'Using random seed:', args.seed
+    print('Using random seed:', args.seed, file=sys.stderr)
 
     x = ["A"] + ["G"] + ["C"] + ["T"]
-    x = x*(args.length / 4)
+    x = x*int(args.length / 4)
 
     random.shuffle(x)
 
-    print '>%s\n%s' % (args.name, "".join(x))
+    print('>%s\n%s' % (args.name, "".join(x)))
 
 if __name__ == '__main__':
     main()

@@ -1,8 +1,9 @@
 #! /usr/bin/env python
+from __future__ import print_function
 import sys
 import screed
 import random
-import fasta
+import screed
 import argparse
 
 parser = argparse.ArgumentParser()
@@ -28,15 +29,15 @@ ERROR_RATE=args.error_rate
 
 random.seed(args.seed)                  # make this reproducible, please.
 
-record = iter(screed.open(args.genome)).next()
+record = next(iter(screed.open(args.genome)))
 
 genome = record.sequence
 len_genome = len(genome)
 
-print >>sys.stderr, 'genome size:', len_genome
-print >>sys.stderr, 'coverage:', COVERAGE
-print >>sys.stderr, 'readlen:', READLEN
-print >>sys.stderr, 'error rate:', ERROR_RATE
+print('genome size:', len_genome, file=sys.stderr)
+print('coverage:', COVERAGE, file=sys.stderr)
+print('readlen:', READLEN, file=sys.stderr)
+print('error rate:', ERROR_RATE, file=sys.stderr)
 
 n_reads = int(len_genome*COVERAGE / float(READLEN))
 read_mutations = 0
@@ -44,8 +45,8 @@ total_mut = 0
 
 nucl = ['a', 'c', 'g', 't']
 
-print >>sys.stderr, "Read in template genome {0} of length {1} from {2}".format(record["name"], len_genome, args.genome)
-print >>sys.stderr, "Generating {0} reads of length {1} for a target coverage of {2} with a target error rate of {3}".format(n_reads, READLEN, COVERAGE, ERROR_RATE)
+print("Read in template genome {0} of length {1} from {2}".format(record["name"], len_genome, args.genome), file=sys.stderr)
+print("Generating {0} reads of length {1} for a target coverage of {2} with a target error rate of {3}".format(n_reads, READLEN, COVERAGE, ERROR_RATE), file=sys.stderr)
 
 if args.mutation_details != None:
     details_out = open(args.mutation_details, "w")
@@ -61,7 +62,7 @@ for i in range(n_reads):
     is_rc = False
     if random.choice([0, 1]) == 0:
         is_rc = True
-        read = fasta.rc(read)
+        read = screed.rc(read)
 
     # error?
     was_mut = False
@@ -88,8 +89,9 @@ for i in range(n_reads):
                     continue
                 
                 if details_out != None:
-                    print >>details_out, "{0}\t{1}\t{2}\t{3}".format(seq_name,
-                                                          pos, orig, new_base)
+                    print("{0}\t{1}\t{2}\t{3}".format(seq_name,
+                                                      pos, orig, new_base),
+                          file=details_out)
 
                 read = read[:pos] + new_base + read[pos+1:]
                 was_mut = True
@@ -99,7 +101,7 @@ for i in range(n_reads):
     if was_mut:
         read_mutations += 1
     
-    print '>{0} start={1},mutations={2}\n{3}'.format(seq_name, start, per_read_mutations, read)
+    print('>{0} start={1},mutations={2}\n{3}'.format(seq_name, start, per_read_mutations, read))
 
-print >>sys.stderr, "%d of %d reads mutated; %d total mutations" % \
-    (read_mutations, n_reads, total_mut)
+print("%d of %d reads mutated; %d total mutations" % \
+      (read_mutations, n_reads, total_mut),  file=sys.stderr)

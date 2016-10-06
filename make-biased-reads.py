@@ -1,9 +1,9 @@
 #! /usr/bin/env python
+from __future__ import print_function
 import screed
 import sys
 import random
 import math
-import fasta
 import argparse
 
 parser = argparse.ArgumentParser()
@@ -26,7 +26,7 @@ READLEN = args.read_length
 ERROR_RATE = args.error_rate
 
 # calculate number of reads to output from first sequence
-record = iter(screed.open(args.genome)).next()
+record = next(iter(screed.open(args.genome)))
 
 genome = record.sequence
 len_genome = len(genome)
@@ -54,7 +54,7 @@ for r in screed.open(args.genome):
     seqs.append(r.sequence)
     powers[index] = power
 
-    print >>sys.stderr, r.name, power, count
+    print(r.name, power, count, file=sys.stderr)
 
     index += 1
 
@@ -75,7 +75,7 @@ while zero_index_count > 0:
 
     # reverse complement?
     if random.choice([0, 1]) == 0:
-        read = fasta.rc(read)
+        read = screed.rc(read)
 
     seq_name = 'read%d' % (n_reads,)
 
@@ -91,8 +91,9 @@ while zero_index_count > 0:
                     continue
 
                 if details_out != None:
-                    print >>details_out, "{0}\t{1}\t{2}\t{3}".format(seq_name,
-                                                          pos, orig, new_base)
+                    print("{0}\t{1}\t{2}\t{3}".format(seq_name,
+                                                      pos, orig, new_base),
+                                                      file=sys.stderr)
 
                 read = read[:pos] + new_base + read[pos+1:]
                 was_mut = True
@@ -101,7 +102,7 @@ while zero_index_count > 0:
     if was_mut:
         reads_mut += 1
 
-    print '>%s\n%s' % (seq_name, read)
+    print('>%s\n%s' % (seq_name, read))
     z.append(index)
     n_reads += 1
 
@@ -109,7 +110,7 @@ y = []
 for i in set(z):
     y.append((z.count(i), i))
 y.sort()
-print >>sys.stderr, 'reads per sequence:', y
+print('reads per sequence:', y, file=sys.stderr)
 
-print >>sys.stderr, "%d of %d reads mutated; %d total mutations" % \
-    (reads_mut, n_reads, total_mut)
+print("%d of %d reads mutated; %d total mutations" % \
+    (reads_mut, n_reads, total_mut), file=sys.stderr)
